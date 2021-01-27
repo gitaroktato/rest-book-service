@@ -1,6 +1,10 @@
 package com.epam.restbookservice.controllers;
 
+import com.epam.restbookservice.domain.Book;
+import com.epam.restbookservice.domain.BookBorrow;
+import com.epam.restbookservice.domain.Role;
 import com.epam.restbookservice.domain.User;
+import com.epam.restbookservice.dtos.UserDTO;
 import com.epam.restbookservice.services.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -15,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/users")
@@ -28,8 +33,24 @@ public class UserManagementController {
 
     @GetMapping
     @PreAuthorize("hasRole('ROLE_LIBRARIAN')")
-    public List<User> getAllUsers() {
-        return userService.getAllUsers();
+    public List<UserDTO> getAllUsers() {
+        return userService.getAllUsers()
+                .stream().map(this::userToUserDTO)
+                .collect(Collectors.toList());
+    }
+
+    private UserDTO userToUserDTO(User user) {
+        return UserDTO.builder()
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .username(user.getUsername())
+                .roles(user.getRoles().stream()
+                        .map(Role::getRoleName).collect(Collectors.toList()))
+                .books(user.getBorrowedBooks().stream()
+                        .map(BookBorrow::getBook)
+                        .map(Book::getTitle)
+                        .collect(Collectors.toList()))
+                .build();
     }
 
     @GetMapping

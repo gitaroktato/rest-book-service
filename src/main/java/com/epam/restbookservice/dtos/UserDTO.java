@@ -24,4 +24,6 @@ public class UserDTO {
     private String password;
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private List<String> roles;
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private List<String> books;
 }
